@@ -100,7 +100,6 @@ namespace Kinovea.ScreenManager
                 e.Cancel = true;
                 m_bUserActivated = false;
                 SaveInfos();
-                ActivateKeyboardHandler();
             }
             else
             {
@@ -109,84 +108,56 @@ namespace Kinovea.ScreenManager
 
             this.Visible = false;
         }
-        private void formKeyframeComments_MouseEnter(object sender, EventArgs e)
-        {
-            DeactivateKeyboardHandler();
-        }
-        private void formKeyframeComments_MouseLeave(object sender, EventArgs e)
-        {
-            CheckMouseLeave();
-        }
         #endregion
         
         #region Styling event handlers
         private void btnBold_Click(object sender, EventArgs e)
         {
-        	int style = GetSelectionStyle();
-        	style = rtbComment.SelectionFont.Bold ? style - (int)FontStyle.Bold : style + (int)FontStyle.Bold;
-        	rtbComment.SelectionFont = new Font(rtbComment.SelectionFont.FontFamily, rtbComment.SelectionFont.Size, (FontStyle)style);
+            int style = GetSelectionStyle();
+            style = rtbComment.SelectionFont.Bold ? style - (int)FontStyle.Bold : style + (int)FontStyle.Bold;
+            rtbComment.SelectionFont = new Font(rtbComment.SelectionFont.FontFamily, rtbComment.SelectionFont.Size, (FontStyle)style);
         }
         private void btnItalic_Click(object sender, EventArgs e)
         {
-        	int style = GetSelectionStyle();
-        	style = rtbComment.SelectionFont.Italic ? style - (int)FontStyle.Italic : style + (int)FontStyle.Italic;
-        	rtbComment.SelectionFont = new Font(rtbComment.SelectionFont.FontFamily, rtbComment.SelectionFont.Size, (FontStyle)style);
+            int style = GetSelectionStyle();
+            style = rtbComment.SelectionFont.Italic ? style - (int)FontStyle.Italic : style + (int)FontStyle.Italic;
+            rtbComment.SelectionFont = new Font(rtbComment.SelectionFont.FontFamily, rtbComment.SelectionFont.Size, (FontStyle)style);
         }
         private void btnUnderline_Click(object sender, EventArgs e)
         {
-        	int style = GetSelectionStyle();
-        	style = rtbComment.SelectionFont.Underline ? style - (int)FontStyle.Underline : style + (int)FontStyle.Underline;
-        	rtbComment.SelectionFont = new Font(rtbComment.SelectionFont.FontFamily, rtbComment.SelectionFont.Size, (FontStyle)style);
+            int style = GetSelectionStyle();
+            style = rtbComment.SelectionFont.Underline ? style - (int)FontStyle.Underline : style + (int)FontStyle.Underline;
+            rtbComment.SelectionFont = new Font(rtbComment.SelectionFont.FontFamily, rtbComment.SelectionFont.Size, (FontStyle)style);
         }
         private void btnStrike_Click(object sender, EventArgs e)
         {
-        	int style = GetSelectionStyle();
-        	style = rtbComment.SelectionFont.Strikeout ? style - (int)FontStyle.Strikeout : style + (int)FontStyle.Strikeout;
-        	rtbComment.SelectionFont = new Font(rtbComment.SelectionFont.FontFamily, rtbComment.SelectionFont.Size, (FontStyle)style);
+            int style = GetSelectionStyle();
+            style = rtbComment.SelectionFont.Strikeout ? style - (int)FontStyle.Strikeout : style + (int)FontStyle.Strikeout;
+            rtbComment.SelectionFont = new Font(rtbComment.SelectionFont.FontFamily, rtbComment.SelectionFont.Size, (FontStyle)style);
         }
         private void btnForeColor_Click(object sender, EventArgs e)
         {
-        	FormColorPicker picker = new FormColorPicker();
-        	FormsHelper.Locate(picker);
-        	if(picker.ShowDialog() == DialogResult.OK)
-        	{
-        		rtbComment.SelectionColor = picker.PickedColor;
-        	}
-        	picker.Dispose();
+            FormColorPicker picker = new FormColorPicker();
+            FormsHelper.Locate(picker);
+            if(picker.ShowDialog() == DialogResult.OK)
+            {
+                rtbComment.SelectionColor = picker.PickedColor;
+            }
+            picker.Dispose();
         }
         private void btnBackColor_Click(object sender, EventArgs e)
         {
-        	FormColorPicker picker = new FormColorPicker();
-        	FormsHelper.Locate(picker);
-        	if(picker.ShowDialog() == DialogResult.OK)
-        	{
-        		rtbComment.SelectionBackColor = picker.PickedColor;
-        	}
-        	picker.Dispose();
+            FormColorPicker picker = new FormColorPicker();
+            FormsHelper.Locate(picker);
+            if(picker.ShowDialog() == DialogResult.OK)
+            {
+                rtbComment.SelectionBackColor = picker.PickedColor;
+            }
+            picker.Dispose();
         }
         #endregion
 
         #region Lower level helpers
-        private void CheckMouseLeave()
-        {
-            // We really leave only if we left the whole control.
-            // we have to do this because placing the mouse over the text boxes will raise a
-            // formKeyframeComments_MouseLeave event...
-            if (!this.Bounds.Contains(Control.MousePosition))
-                ActivateKeyboardHandler(); 
-        }
-        private void DeactivateKeyboardHandler()
-        {
-            NotificationCenter.RaiseDisableKeyboardHandler(this);
-        }
-        private void ActivateKeyboardHandler()
-        {
-            // Mouse leave the info box : reactivate the keyboard handling for the screens
-            // so we can use <space>, <return>, etc. as player shortcuts.
-            // This is sometimes strange. You put the mouse away to start typing, 
-            // and the first carriage return triggers the playback leaving the key image.
-            NotificationCenter.RaiseEnableKeyboardHandler(this);
-        }
         private void LoadInfos()
         {
             // Update
@@ -202,24 +173,24 @@ namespace Kinovea.ScreenManager
             log.Debug("Saving comment and title");
             if (m_Keyframe != null)
             {
-	            m_Keyframe.CommentRtf = rtbComment.Rtf;
-	
-            	if(m_Keyframe.Title != txtTitle.Text)
-            	{
-            		m_Keyframe.Title = txtTitle.Text;	
-            		m_psui.OnKeyframesTitleChanged();
-            	}
+                m_Keyframe.CommentRtf = rtbComment.Rtf;
+    
+                if(m_Keyframe.Title != txtTitle.Text)
+                {
+                    m_Keyframe.Title = txtTitle.Text;	
+                    m_psui.OnKeyframesTitleChanged();
+                }
             }
         }
         private int GetSelectionStyle()
         {
-        	// Combine all the styles into an int, to have generic toggles methods.
-        	int bold = rtbComment.SelectionFont.Bold ? (int)FontStyle.Bold : 0;
-        	int italic = rtbComment.SelectionFont.Italic ? (int)FontStyle.Italic : 0;
-        	int underline = rtbComment.SelectionFont.Underline ? (int)FontStyle.Underline : 0;
-        	int strikeout = rtbComment.SelectionFont.Strikeout ? (int)FontStyle.Strikeout : 0;
-        	
-        	return bold + italic + underline + strikeout;
+            // Combine all the styles into an int, to have generic toggles methods.
+            int bold = rtbComment.SelectionFont.Bold ? (int)FontStyle.Bold : 0;
+            int italic = rtbComment.SelectionFont.Italic ? (int)FontStyle.Italic : 0;
+            int underline = rtbComment.SelectionFont.Underline ? (int)FontStyle.Underline : 0;
+            int strikeout = rtbComment.SelectionFont.Strikeout ? (int)FontStyle.Strikeout : 0;
+            
+            return bold + italic + underline + strikeout;
         }
         #endregion
 

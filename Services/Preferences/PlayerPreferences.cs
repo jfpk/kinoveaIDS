@@ -27,9 +27,13 @@ using Kinovea.Video;
 
 namespace Kinovea.Services
 {
-    public class PlayerPreferences
+    public class PlayerPreferences : IPreferenceSerializer
     {
         #region Properties
+        public string Name
+        {
+            get { return "Player"; }
+        }
         public TimecodeFormat TimecodeFormat
         {
             get { return timecodeFormat; }
@@ -41,15 +45,15 @@ namespace Kinovea.Services
             set { speedUnit = value; }
         }
         public ImageAspectRatio AspectRatio
-		{
-			get { return aspectRatio; }
-			set { aspectRatio = value; }
-		}
+        {
+            get { return aspectRatio; }
+            set { aspectRatio = value; }
+        }
         public bool DeinterlaceByDefault
-		{
-			get { return deinterlaceByDefault; }
-			set { deinterlaceByDefault = value; }
-		}
+        {
+            get { return deinterlaceByDefault; }
+            set { deinterlaceByDefault = value; }
+        }
         public int WorkingZoneSeconds
         {
             get { return workingZoneSeconds; }
@@ -70,20 +74,30 @@ namespace Kinovea.Services
             get { return defaultFading; }
             set { defaultFading = value; }
         }
-		public int MaxFading
-		{
-			get { return maxFading; }
-			set { maxFading = value; }
-		}
+        public int MaxFading
+        {
+            get { return maxFading; }
+            set { maxFading = value; }
+        }
         public bool DrawOnPlay
         {
             get { return drawOnPlay; }
             set { drawOnPlay = value; }
         }
         public List<Color> RecentColors
-		{
-			get { return recentColors; }
-		}
+        {
+            get { return recentColors; }
+        }
+        public KinoveaImageFormat ImageFormat
+        {
+            get { return imageFormat; }
+            set { imageFormat = value; }
+        }
+        public KinoveaVideoFormat VideoFormat
+        {
+            get { return videoFormat; }
+            set { videoFormat = value; }
+        }
         #endregion
         
         private TimecodeFormat timecodeFormat = TimecodeFormat.ClassicTime;
@@ -98,11 +112,13 @@ namespace Kinovea.Services
         private List<Color> recentColors = new List<Color>();
         private int maxRecentColors = 12;
         private bool syncLockSpeed = true;
+        private KinoveaImageFormat imageFormat = KinoveaImageFormat.JPG;
+        private KinoveaVideoFormat videoFormat = KinoveaVideoFormat.MKV;
         
         public void AddRecentColor(Color _color)
-    	{
-    	    PreferencesManager.UpdateRecents(_color, recentColors, maxRecentColors);
-    	}
+        {
+            PreferencesManager.UpdateRecents(_color, recentColors, maxRecentColors);
+        }
         
         public void WriteXML(XmlWriter writer)
         {
@@ -113,6 +129,8 @@ namespace Kinovea.Services
             writer.WriteElementString("WorkingZoneSeconds", workingZoneSeconds.ToString());
             writer.WriteElementString("WorkingZoneMemory", workingZoneMemory.ToString());
             writer.WriteElementString("SyncLockSpeed", syncLockSpeed ? "true" : "false");
+            writer.WriteElementString("ImageFormat", imageFormat.ToString());
+            writer.WriteElementString("VideoFormat", videoFormat.ToString());
             
             writer.WriteStartElement("InfoFading");
             defaultFading.WriteXml(writer);
@@ -143,11 +161,11 @@ namespace Kinovea.Services
             reader.ReadStartElement();
 
             while(reader.NodeType == XmlNodeType.Element)
-			{
-				switch(reader.Name)
-				{
-					case "TimecodeFormat":
-				        timecodeFormat = (TimecodeFormat) Enum.Parse(typeof(TimecodeFormat), reader.ReadElementContentAsString());
+            {
+                switch(reader.Name)
+                {
+                    case "TimecodeFormat":
+                        timecodeFormat = (TimecodeFormat) Enum.Parse(typeof(TimecodeFormat), reader.ReadElementContentAsString());
                         break;
                     case "SpeedUnit":
                         speedUnit = (SpeedUnit) Enum.Parse(typeof(SpeedUnit), reader.ReadElementContentAsString());
@@ -167,6 +185,12 @@ namespace Kinovea.Services
                     case "SyncLockSpeed":
                         syncLockSpeed = XmlHelper.ParseBoolean(reader.ReadElementContentAsString());
                         break;
+                    case "ImageFormat":
+                        imageFormat = (KinoveaImageFormat)Enum.Parse(typeof(KinoveaImageFormat), reader.ReadElementContentAsString());
+                        break;
+                    case "VideoFormat":
+                        videoFormat = (KinoveaVideoFormat)Enum.Parse(typeof(KinoveaVideoFormat), reader.ReadElementContentAsString());
+                        break;
                     case "InfoFading":
                         defaultFading.ReadXml(reader);
                         break;
@@ -185,7 +209,7 @@ namespace Kinovea.Services
                     default:
                         reader.ReadOuterXml();
                         break;
-				}
+                }
             }
             
             reader.ReadEndElement();
@@ -193,13 +217,13 @@ namespace Kinovea.Services
         
         private void ParseRecentColors(XmlReader reader)
         {
-    	    recentColors.Clear();
-    	    bool empty = reader.IsEmptyElement;
+            recentColors.Clear();
+            bool empty = reader.IsEmptyElement;
             
-    	    reader.ReadStartElement();
-    	    
-    	    if(empty)
-    	        return;
+            reader.ReadStartElement();
+            
+            if(empty)
+                return;
             
             while(reader.NodeType == XmlNodeType.Element)
             {

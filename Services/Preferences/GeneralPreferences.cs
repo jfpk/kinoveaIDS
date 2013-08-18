@@ -25,8 +25,13 @@ using System.Xml;
 
 namespace Kinovea.Services
 {
-    public class GeneralPreferences
+    public class GeneralPreferences : IPreferenceSerializer
     {
+        public string Name
+        {
+            get { return "General"; }
+        }
+
         public bool ExplorerVisible
         {
             get { return explorerVisible; }
@@ -37,10 +42,18 @@ namespace Kinovea.Services
             get { return explorerSplitterDistance; }
             set { explorerSplitterDistance = value; }
         }
+
+        public int PreferencesTab
+        {
+            get { return preferencesTab; }
+            set { preferencesTab = value; }
+        }
         
+
         private string uiCultureName;
         private bool explorerVisible = true;
         private int explorerSplitterDistance = 250;
+        private int preferencesTab;
         
         
         public GeneralPreferences()
@@ -55,12 +68,12 @@ namespace Kinovea.Services
         
         public CultureInfo GetSupportedCulture()
         {
-        	// Returns the actual culture used in the UI.
-        	CultureInfo ci = new CultureInfo(uiCultureName);
-        	if(LanguageManager.IsSupportedCulture(ci))
-        		return ci;
-        	else
-        		return new CultureInfo("en");
+            // Returns the actual culture used in the UI.
+            CultureInfo ci = new CultureInfo(uiCultureName);
+            if(LanguageManager.IsSupportedCulture(ci))
+                return ci;
+            else
+                return new CultureInfo("en");
         }
         
         public void WriteXML(XmlWriter writer)
@@ -68,6 +81,7 @@ namespace Kinovea.Services
             writer.WriteElementString("Culture", uiCultureName);
             writer.WriteElementString("ExplorerVisible", explorerVisible ? "true" : "false");
             writer.WriteElementString("ExplorerSplitterDistance", explorerSplitterDistance.ToString());
+            writer.WriteElementString("PreferencesTab", preferencesTab.ToString());
         }
         
         public void ReadXML(XmlReader reader)
@@ -75,11 +89,11 @@ namespace Kinovea.Services
             reader.ReadStartElement();
 
             while(reader.NodeType == XmlNodeType.Element)
-			{
-				switch(reader.Name)
-				{
-					case "Culture":
-				        uiCultureName = reader.ReadElementContentAsString();
+            {
+                switch(reader.Name)
+                {
+                    case "Culture":
+                        uiCultureName = reader.ReadElementContentAsString();
                         break;
                     case "ExplorerVisible":
                         explorerVisible = XmlHelper.ParseBoolean(reader.ReadElementContentAsString());
@@ -87,10 +101,13 @@ namespace Kinovea.Services
                     case "ExplorerSplitterDistance":
                         explorerSplitterDistance = reader.ReadElementContentAsInt();
                         break;
+                    case "PreferencesTab":
+                        preferencesTab = reader.ReadElementContentAsInt();
+                        break;
                     default:
                         reader.ReadOuterXml();
                         break;
-				}
+                }
             }
             
             reader.ReadEndElement();   

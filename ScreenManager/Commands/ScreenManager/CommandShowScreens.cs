@@ -19,41 +19,35 @@ along with Kinovea. If not, see http://www.gnu.org/licenses/.
 */
 
 using Kinovea.ScreenManager.Languages;
-using System;
-using System.Reflection;
-using System.Resources;
-using System.Threading;
 using Kinovea.Services;
 
 namespace Kinovea.ScreenManager
 {
-	/// <summary>
-	/// This command is used to translate the screen list in actual screen panels.
-	/// We generally land here after a command modified the screen list.
-	/// We parse the list and make sure the panels are conform, by adding or removing them.
-	/// </summary>
+    /// <summary>
+    /// This command is used to translate the screen list in actual screen panels.
+    /// We generally land here after a command modified the screen list.
+    /// We parse the list and make sure the panels are conform, by adding or removing them.
+    /// </summary>
     public class CommandShowScreens : ICommand 
     {
         public string FriendlyName
         {
-        	get { return ScreenManagerLang.CommandShowScreen_FriendlyName; }
+            get { return ScreenManagerLang.CommandShowScreen_FriendlyName; }
         }
 
         ScreenManagerKernel screenManagerKernel;
 
-        #region constructor
-        public CommandShowScreens(ScreenManagerKernel _smk)
+        public CommandShowScreens(ScreenManagerKernel screenManagerKernel)
         {
-            screenManagerKernel = _smk;
+            this.screenManagerKernel = screenManagerKernel;
         }
-        #endregion
         
         public void Execute()
         {
-        	if(screenManagerKernel.View == null)
+            if(screenManagerKernel.View == null)
                 return;
             
-            screenManagerKernel.View.OrganizeScreens(screenManagerKernel.screenList);
+            screenManagerKernel.OrganizeScreens();
             screenManagerKernel.UpdateStatusBar();
         }
     }

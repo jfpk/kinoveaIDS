@@ -48,27 +48,33 @@ namespace Kinovea.ScreenManager
         }
         public bool CommonPlaying
         {
-            get { return commonControls.Playing; }
-            set { commonControls.Playing = value; }
+            get { return cctrlsPlayers.Playing; }
+            set { cctrlsPlayers.Playing = value; }
         }
         public bool Merging
         {
-            get { return commonControls.SyncMerging; }
-            set { commonControls.SyncMerging = value; }
+            get { return cctrlsPlayers.SyncMerging; }
+            set { cctrlsPlayers.SyncMerging = value; }
         }
         #endregion
         
         #region Members
         private ThumbnailViewerContainer thumbnailViewerContainer = new ThumbnailViewerContainer();
+        private CommonControlsPlayers cctrlsPlayers = new CommonControlsPlayers();
+        private CommonControlsCapture cctrlsCapture = new CommonControlsCapture();
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-		#endregion
+        #endregion
         
-		public ScreenManagerUserInterface(IScreenManagerUIContainer controller)
+        public ScreenManagerUserInterface(ICommonControlsManager screenManager)
         {
-        	log.Debug("Constructing ScreenManagerUserInterface.");
+            log.Debug("Constructing ScreenManagerUserInterface.");
             InitializeComponent();
-            commonControls.Controller = controller;
-            
+
+            cctrlsPlayers.Dock = DockStyle.Fill;
+            cctrlsPlayers.SetManager(screenManager);
+            cctrlsCapture.Dock = DockStyle.Fill;
+            cctrlsCapture.SetManager(screenManager);
+
             BackColor = Color.White;
             Dock = DockStyle.Fill;
             
@@ -76,10 +82,9 @@ namespace Kinovea.ScreenManager
             
             delegateUpdateTrackerFrame = UpdateTrkFrame;
 
-            // Thumbs are enabled by default.
             thumbnailViewerContainer.BringToFront();
             pnlScreens.BringToFront();
-            pnlScreens.Dock     = DockStyle.Fill;
+            pnlScreens.Dock = DockStyle.Fill;
 
             Application.Idle += this.IdleDetector;
         }
@@ -87,23 +92,25 @@ namespace Kinovea.ScreenManager
         #region Public methods
         public void RefreshUICulture()
         {
-            commonControls.RefreshUICulture();
+            cctrlsPlayers.RefreshUICulture();
             thumbnailViewerContainer.RefreshUICulture();
         }
-        public void ShowCommonControls(bool show)
+        public void ShowCommonControls(bool show, Pair<Type, Type> types)
         {
             splitScreensPanel.Panel2Collapsed = !show;
+            if (types == null)
+                return;
+
+            splitScreensPanel.Panel2.Controls.Clear();
+
+            if (types.First == typeof(PlayerScreen))
+                splitScreensPanel.Panel2.Controls.Add(cctrlsPlayers);
+            else
+                splitScreensPanel.Panel2.Controls.Add(cctrlsCapture);
         }
         public void ToggleCommonControls()
         {
             splitScreensPanel.Panel2Collapsed = !splitScreensPanel.Panel2Collapsed;
-        }
-        public bool OnKeyPress(Keys key)
-        {
-            if(!thumbnailViewerContainer.Visible)
-                return false;
-            
-            return thumbnailViewerContainer.OnKeyPress(key);
         }
         public void OrganizeScreens(List<AbstractScreen> screenList)
         {
@@ -136,25 +143,21 @@ namespace Kinovea.ScreenManager
         }
         
         #region Forwarded to common controls
-        public void UpdateSyncPosition(long position)
-        {
-            commonControls.UpdateSyncPosition(position);
-        }
         public void SetupTrkFrame(long min, long max, long pos)
         {
-            commonControls.SetupTrkFrame(min, max, pos);
+            cctrlsPlayers.SetupTrkFrame(min, max, pos);
         }
         public void UpdateTrkFrame(long position)
         {
-            commonControls.UpdateTrkFrame(position);
+            cctrlsPlayers.UpdateTrkFrame(position);
+        }
+        public void UpdateSyncPosition(long position)
+        {
+            cctrlsPlayers.UpdateSyncPosition(position);
         }
         public void DisplayAsPaused()
         {
-            commonControls.Playing = false;
-        }
-        public bool CommonKeyPress(Keys key)
-        {
-            return commonControls.OnKeyPress(key);
+            cctrlsPlayers.Playing = false;
         }
         #endregion
 
@@ -170,19 +173,19 @@ namespace Kinovea.ScreenManager
             };
             
             this.Controls.Add(thumbnailViewerContainer);
-		}
+        }
         private void IdleDetector(object sender, EventArgs e)
-		{
-			log.Debug("Application is idle in ScreenManagerUserInterface.");
-			
-			// This is a one time only routine.
-			Application.Idle -= new EventHandler(this.IdleDetector);
-			
-			// Launch file.
-			string filePath = CommandLineArgumentManager.Instance().InputFile;
-			if(filePath != null && File.Exists(filePath) && FileLoadAsked != null)
-			    FileLoadAsked(this, new FileLoadAskedEventArgs(filePath, -1));
-		}
+        {
+            log.Debug("Application is idle in ScreenManagerUserInterface.");
+            
+            // This is a one time only routine.
+            Application.Idle -= new EventHandler(this.IdleDetector);
+            
+            // Launch file.
+            string filePath = CommandLineArgumentManager.Instance().InputFile;
+            if(filePath != null && File.Exists(filePath) && FileLoadAsked != null)
+                FileLoadAsked(this, new FileLoadAskedEventArgs(filePath, -1));
+        }
         private void pnlScreens_Resize(object sender, EventArgs e)
         {
             // Reposition Common Controls panel so it doesn't take more space than necessary.
@@ -225,7 +228,7 @@ namespace Kinovea.ScreenManager
         #region DragDrop
         private void DroppableArea_DragOver(object sender, DragEventArgs e)
         {
-        	e.Effect = DragDropEffects.All;
+            e.Effect = DragDropEffects.All;
         }
         private void ScreenManagerUserInterface_DragDrop(object sender, DragEventArgs e)
         {
@@ -263,42 +266,5 @@ namespace Kinovea.ScreenManager
             }
         }
         #endregion
-
-        /*private void DoDisplayThumbnails(List<String> _fileNames, bool _bRefreshNow)
-        {
-        	// Keep track of the files, in case we need to bring them back
-        	// after closing a screen.
-            filenames = _fileNames;
-
-            if(!_bRefreshNow)
-                return;
-            
-            if (_fileNames.Count > 0)
-            {
-            	thumbnailViewerContainer.Height = Height - 20; // margin for cosmetic
-                
-            	// We keep the Kinovea logo until there is at least 1 thumbnail to show.
-            	// After that we never display it again.
-                pbLogo.Visible = false;
-            }
-            else
-            {
-                thumbnailViewerContainer.Height = 1;
-            }
-
-            if (thumbnailViewerContainer.Visible)
-            {
-                this.Cursor = Cursors.WaitCursor;
-                thumbnailViewerContainer.DisplayThumbnails(_fileNames);
-                this.Cursor = Cursors.Default;
-            }
-            else
-            {
-                // Thumbnail pane was hidden to show player screen
-                // Then we changed folder and we don't have anything to show.
-                // Let's clean older thumbnails now.
-                thumbnailViewerContainer.CleanupThumbnails();
-            }
-        }*/
     }
 }

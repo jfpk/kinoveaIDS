@@ -155,7 +155,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Refs\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="SharpVectorBindings">
       <HintPath>..\Refs\SharpVectorBindings.dll</HintPath>
     </Reference>
@@ -229,8 +228,8 @@
     <Compile Include="CaptureScreen\Views\ViewPort.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="CommandProcessedEventArgs.cs" />
     <Compile Include="Commands\ScreenManager\CommandLoadCameraInScreen.cs" />
-    <Compile Include="FilesystemHelper.cs" />
     <Compile Include="IImageToViewportTransformer.cs" />
     <Compile Include="ImageHelper.cs" />
     <Compile Include="ImageToViewportTransformer.cs" />
@@ -256,7 +255,18 @@
     <Compile Include="CoordinateSystem.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="IScreenManagerUIContainer.cs" />
+    <Compile Include="Properties\Player.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Player.resx</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterface\CommonControlsCapture.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UserInterface\CommonControlsCapture.Designer.cs">
+      <DependentUpon>CommonControlsCapture.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterface\ICommonControlsManager.cs" />
     <Compile Include="IScreenHandler.cs" />
     <Compile Include="IScreenUIHandler.cs" />
     <Compile Include="ManipulationType.cs" />
@@ -633,11 +643,11 @@
     <Compile Include="UserInterface\FormColorPicker.Designer.cs">
       <DependentUpon>FormColorPicker.cs</DependentUpon>
     </Compile>
-    <Compile Include="UserInterface\CommonControls.cs">
+    <Compile Include="UserInterface\CommonControlsPlayers.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UserInterface\CommonControls.Designer.cs">
-      <DependentUpon>CommonControls.cs</DependentUpon>
+    <Compile Include="UserInterface\CommonControlsPlayers.Designer.cs">
+      <DependentUpon>CommonControlsPlayers.cs</DependentUpon>
     </Compile>
     <Compile Include="Languages\ScreenManagerLang.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -665,7 +675,6 @@
     <Compile Include="UserInterface\FormIconPicker.Designer.cs">
       <DependentUpon>FormIconPicker.cs</DependentUpon>
     </Compile>
-    <Compile Include="UserInterface\FormsHelper.cs" />
     <Compile Include="UserInterface\ScreenManagerUserInterface.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -701,6 +710,10 @@
     <EmbeddedResource Include="Languages\ScreenManagerLang.sv.resx" />
     <EmbeddedResource Include="Languages\ScreenManagerLang.tr.resx" />
     <EmbeddedResource Include="Languages\ScreenManagerLang.zh-CHS.resx" />
+    <EmbeddedResource Include="Properties\Player.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Player.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="PlayerScreen\UserInterface\Controls\FrameTracker.resx">
       <DependentUpon>FrameTracker.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -769,6 +782,9 @@
     <EmbeddedResource Include="Thumbnails\ThumbnailCamera.resx">
       <DependentUpon>ThumbnailCamera.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Thumbnails\ThumbnailFile.resx">
+      <DependentUpon>ThumbnailFile.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Thumbnails\ThumbnailViewerCameras.resx">
       <DependentUpon>ThumbnailViewerCameras.cs</DependentUpon>
     </EmbeddedResource>
@@ -777,6 +793,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Thumbnails\ThumbnailViewerFiles.resx">
       <DependentUpon>ThumbnailViewerFiles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UserInterface\CommonControlsCapture.resx">
+      <DependentUpon>CommonControlsCapture.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="UserInterface\FormColorPicker.resx">
       <DependentUpon>FormColorPicker.cs</DependentUpon>
@@ -807,9 +827,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="UserInterface\CommonControls.resx">
+    <EmbeddedResource Include="UserInterface\CommonControlsPlayers.resx">
       <SubType>Designer</SubType>
-      <DependentUpon>CommonControls.cs</DependentUpon>
+      <DependentUpon>CommonControlsPlayers.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Languages\ScreenManagerLang.es.resx">
       <SubType>Designer</SubType>
@@ -908,6 +928,93 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\clipboard-block.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\play2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\play3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\end.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\next.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\prev.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\start.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatplay40x30.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatnext.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatprev.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatend.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatstart.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatend2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatnext2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatprev2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatstart2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatend3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatnext3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatprev3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatstart3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatloop3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatswap3b.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatsync3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatpause3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatpause3b.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatswap3d.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\flatsync3c.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\camera_video.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

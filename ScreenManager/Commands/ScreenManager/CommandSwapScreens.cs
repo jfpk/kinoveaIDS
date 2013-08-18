@@ -19,10 +19,6 @@ along with Kinovea. If not, see http://www.gnu.org/licenses/.
 */
 
 using Kinovea.ScreenManager.Languages;
-using System;
-using System.Reflection;
-using System.Resources;
-using System.Threading;
 using Kinovea.Services;
 
 namespace Kinovea.ScreenManager
@@ -36,33 +32,29 @@ namespace Kinovea.ScreenManager
 
         ScreenManagerKernel screenManagerKernel;
 
-        #region constructor
-        public CommandSwapScreens(ScreenManagerKernel _smk)
+        public CommandSwapScreens(ScreenManagerKernel screenManagerKernel)
         {
-            screenManagerKernel = _smk;
+            this.screenManagerKernel = screenManagerKernel;
         }
-        #endregion
 
         public void Execute()
         {
-            // We keep the list ordered. [0] = left.
-            AbstractScreen temp = screenManagerKernel.screenList[0];
-            screenManagerKernel.screenList[0] = screenManagerKernel.screenList[1];
-            screenManagerKernel.screenList[1] = temp;
-
-            // Show new disposition.
-            screenManagerKernel.View.OrganizeScreens(screenManagerKernel.screenList);
-            
-            // the following lines are placed here so they also get called at unexecute.
-            screenManagerKernel.OrganizeMenus();
-            screenManagerKernel.UpdateStatusBar();
-            screenManagerKernel.SwapSync();
-            screenManagerKernel.SetSyncPoint(true);
+            screenManagerKernel.SwapScreens();
+            screenManagerKernel.OrganizeScreens();
+            AfterSwap();
         }
 
         public void Unexecute()
         {
             Execute();
         } 
+
+        private void AfterSwap()
+        {
+            screenManagerKernel.OrganizeMenus();
+            screenManagerKernel.UpdateStatusBar();
+            screenManagerKernel.SwapSync();
+            screenManagerKernel.SetSyncPoint(true);
+        }
     }
 }

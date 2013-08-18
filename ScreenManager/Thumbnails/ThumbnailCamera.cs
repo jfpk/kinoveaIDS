@@ -26,6 +26,7 @@ using System.Windows.Forms;
 
 using Kinovea.Camera;
 using Kinovea.ScreenManager.Languages;
+using Kinovea.Services;
 
 namespace Kinovea.ScreenManager
 {
@@ -102,6 +103,7 @@ namespace Kinovea.ScreenManager
         public void SetSelected()
         {
             // This method triggers an event to notify the container.
+            this.Focus();
 
             if (selected)
                 return;
@@ -111,6 +113,24 @@ namespace Kinovea.ScreenManager
             
             if (CameraSelected != null)
                 CameraSelected(this, EventArgs.Empty);
+        }
+        public void StartRenaming()
+        {
+            FormCameraAlias fca = new FormCameraAlias(Summary);
+            FormsHelper.Locate(fca);
+            if (fca.ShowDialog() == DialogResult.OK)
+            {
+                Summary.UpdateAlias(fca.Alias, fca.PickedIcon);
+
+                lblAlias.Text = Summary.Alias;
+                btnIcon.BackgroundImage = Summary.Icon;
+                RelocateInfo();
+
+                if (SummaryUpdated != null)
+                    SummaryUpdated(this, EventArgs.Empty);
+            }
+
+            fca.Dispose();
         }
         #endregion
         
@@ -168,23 +188,7 @@ namespace Kinovea.ScreenManager
 
         private void mnuRename_Click(object sender, EventArgs e)
         {
-            FormsHelper.BeforeShow();
-            FormCameraAlias fca = new FormCameraAlias(Summary);
-            FormsHelper.Locate(fca);
-            if(fca.ShowDialog() == DialogResult.OK)
-            {
-                Summary.UpdateAlias(fca.Alias, fca.PickedIcon);
-                
-                lblAlias.Text = Summary.Alias;
-                btnIcon.BackgroundImage = Summary.Icon;
-                RelocateInfo();
-                
-                if(SummaryUpdated != null)
-                    SummaryUpdated(this, EventArgs.Empty);
-            }
-            
-            fca.Dispose();
-            FormsHelper.AfterShow();
+            StartRenaming();
         }
         
         private void mnuLaunch_Click(object sender, EventArgs e)

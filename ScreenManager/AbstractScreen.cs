@@ -41,10 +41,22 @@ namespace Kinovea.ScreenManager
         {
             RaiseEvent(CloseAsked, e);
         }
-        
+
+        public event EventHandler<CommandProcessedEventArgs> CommandProcessed;
+        protected virtual void OnCommandProcessed(CommandProcessedEventArgs e)
+        {
+            RaiseEvent(CommandProcessed, e);
+        }
+
         private void RaiseEvent(EventHandler invoker, EventArgs e)
         {
             if(invoker != null)
+                invoker(this, e);
+        }
+
+        private void RaiseEvent<T>(EventHandler<T> invoker, T e) where T : EventArgs
+        {
+            if (invoker != null)
                 invoker(this, e);
         }
         #endregion
@@ -89,10 +101,10 @@ namespace Kinovea.ScreenManager
         public abstract void PreferencesUpdated();
         public abstract void BeforeClose();
         public abstract void AfterClose();
-        public abstract bool OnKeyPress(Keys _key);
         public abstract void RefreshImage();
         public abstract void AddImageDrawing(string _filename, bool _bIsSvg);
         public abstract void AddImageDrawing(Bitmap _bmp);
         public abstract void FullScreen(bool _bFullScreen);
+        public abstract void ExecuteCommand(int cmd);
     }   
 }

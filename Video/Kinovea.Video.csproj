@@ -74,9 +74,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <OutputPath>..\Root\bin\x86\Debug\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <OutputPath>..\Root\bin\x86\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net">
@@ -100,13 +102,10 @@
     <Compile Include="FrameContainers\IWorkingZoneContainer.cs" />
     <Compile Include="FrameContainers\SingleFrame.cs" />
     <Compile Include="FrameContainers\PreBuffer.cs" />
-    <Compile Include="Readers\CapabilityNotSupportedException.cs" />
-    <Compile Include="Readers\Generators\FrameGeneratorImageFile.cs" />
-    <Compile Include="Readers\Generators\IFrameGenerator.cs" />
-    <Compile Include="Readers\VideoReaderAlwaysCaching.cs" />
-    <Compile Include="Readers\VideoReaderGenerator.cs" />
-    <Compile Include="Readers\VideoReaderGif.cs" />
-    <Compile Include="Readers\VideoReader.cs" />
+    <Compile Include="CapabilityNotSupportedException.cs" />
+    <Compile Include="IFrameGenerator.cs" />
+    <Compile Include="VideoReaderAlwaysCaching.cs" />
+    <Compile Include="VideoReader.cs" />
     <Compile Include="ThreadCanceler.cs" />
     <Compile Include="Delegates.cs" />
     <Compile Include="Enums.cs" />

@@ -19,6 +19,7 @@ along with Kinovea. If not, see http://www.gnu.org/licenses/.
 */
 #endregion
 using System;
+using System.Collections.Generic;
 
 namespace Kinovea.Services
 {
@@ -45,18 +46,46 @@ namespace Kinovea.Services
                 LaunchOpenDialog(sender, EventArgs.Empty);
         }
         
-        public static EventHandler DisableKeyboardHandler;
-        public static void RaiseDisableKeyboardHandler(object sender)
+        public static EventHandler<FileActionEventArgs> FileSelected;
+        public static void RaiseFileSelected(object sender, string file)
         {
-            if(DisableKeyboardHandler != null)
-                DisableKeyboardHandler(sender, EventArgs.Empty);
+            if (FileSelected != null)
+                FileSelected(sender, new FileActionEventArgs(file));
         }
-        
-        public static EventHandler EnableKeyboardHandler;
-        public static void RaiseEnableKeyboardHandler(object sender)
+
+        public static EventHandler<FileActionEventArgs> FileOpened;
+        public static void RaiseFileOpened(object sender, string file)
         {
-            if(EnableKeyboardHandler != null)
-                EnableKeyboardHandler(sender, EventArgs.Empty);
+            if (FileOpened != null)
+                FileOpened(sender, new FileActionEventArgs(file));
+        }
+
+        public static EventHandler<ExplorerTabEventArgs> ExplorerTabChanged;
+        public static void RaiseExplorerTabChanged(object sender, ActiveFileBrowserTab tab)
+        {
+            if (ExplorerTabChanged != null)
+                ExplorerTabChanged(sender, new ExplorerTabEventArgs(tab));
+        }
+
+        public static EventHandler StopPlayback;
+        public static void RaiseStopPlayback(object sender)
+        {
+            if (StopPlayback != null)
+                StopPlayback(sender, EventArgs.Empty);
+        }
+
+        public static EventHandler<CurrentDirectoryChangedEventArgs> CurrentDirectoryChanged;
+        public static void RaiseCurrentDirectoryChanged(object sender, bool shortcuts, List<string> files, bool refresh)
+        {
+            if (CurrentDirectoryChanged != null)
+                CurrentDirectoryChanged(sender, new CurrentDirectoryChangedEventArgs(shortcuts, files, refresh));
+        }
+
+        public static EventHandler<StatusUpdatedEventArgs> StatusUpdated;
+        public static void RaiseStatusUpdated(object sender, string status)
+        {
+            if (StatusUpdated != null)
+                StatusUpdated(sender, new StatusUpdatedEventArgs(status));
         }
     }
 }
