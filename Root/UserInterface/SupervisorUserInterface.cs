@@ -1,0 +1,196 @@
+/*
+Copyright © Joan Charmant 2008.
+joan.charmant@gmail.com 
+ 
+This file is part of Kinovea.
+
+Kinovea is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 2 
+as published by the Free Software Foundation.
+
+Kinovea is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Kinovea. If not, see http://www.gnu.org/licenses/.
+
+*/
+
+using System;
+using System.Windows.Forms;
+using Kinovea.Services;
+using Kinovea.Video;
+
+namespace Kinovea.Root
+{
+    public partial class SupervisorUserInterface : UserControl
+    {
+        #region Properties
+        public bool IsExplorerCollapsed
+        {
+            get { return m_bExplorerCollapsed; }
+        }
+        #endregion
+
+        #region Members
+        private int m_iOldSplitterDistance;
+        private bool m_bExplorerCollapsed;
+        private RootKernel RootKernel;
+        private bool isOpening;
+        private bool m_bInitialized;
+        #endregion
+
+        #region Construction Destruction
+        public SupervisorUserInterface(RootKernel _RootKernel)
+        {
+            RootKernel = _RootKernel;
+            InitializeComponent();
+            m_bInitialized = false;
+
+            // Get Explorer values from settings.
+            m_iOldSplitterDistance = PreferencesManager.GeneralPreferences.ExplorerSplitterDistance;
+            
+            NotificationCenter.LaunchOpenDialog += NotificationCenter_LaunchOpenDialog;
+        }
+        private void SupervisorUserInterface_Load(object sender, EventArgs e)
+        {
+        	if(CommandLineArgumentManager.Instance().HideExplorer || !PreferencesManager.GeneralPreferences.ExplorerVisible)
+        		CollapseExplorer();
+        	else
+                ExpandExplorer(true);
+
+        	m_bInitialized = true;
+        }
+        #endregion
+
+        public void PlugUI(UserControl fileExplorer, UserControl screenManager)
+        {
+            splitWorkSpace.Panel1.Controls.Add(fileExplorer);
+            splitWorkSpace.Panel2.Controls.Add(screenManager);
+            
+            int topMargin = 2;
+            fileExplorer.Top = topMargin;
+            fileExplorer.Left = 0;
+            fileExplorer.Width = splitWorkSpace.Panel1.Width;
+            fileExplorer.Height = splitWorkSpace.Panel1.Height - topMargin;
+            fileExplorer.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+        }
+
+        #region Event Handlers
+        private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            // Finished moving the splitter.
+            
+            splitWorkSpace.Panel1.Refresh();
+
+            if (m_bInitialized)
+            {
+                PreferencesManager.GeneralPreferences.ExplorerSplitterDistance = splitWorkSpace.SplitterDistance;
+                PreferencesManager.GeneralPreferences.ExplorerVisible = true;
+                PreferencesManager.Save();
+            }
+        }
+        private void NotificationCenter_LaunchOpenDialog(object sender, EventArgs e)
+        {
+            if(isOpening || RootKernel.ScreenManager.ScreenCount != 0)
+                return;
+            
+            isOpening = true;
+
+            string filepath = RootKernel.LaunchOpenFileDialog();
+            if (filepath.Length > 0)
+                VideoTypeManager.LoadVideo(filepath, -1);
+                
+            isOpening = false;
+        }
+        private void buttonCloseExplo_Click(object sender, EventArgs e)
+        {
+            CollapseExplorer();
+        }
+        private void _splitWorkSpace_DoubleClick(object sender, EventArgs e)
+        {
+            if (m_bExplorerCollapsed)
+                ExpandExplorer(true);
+            else
+                CollapseExplorer();
+        }
+        private void _splitWorkSpace_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (m_bExplorerCollapsed && splitWorkSpace.SplitterDistance > 30)
+            {
+                ExpandExplorer(false);
+            }  
+        }
+        private void splitWorkSpace_Panel1_Click(object sender, EventArgs e)
+        {
+             // Clic sur l'explorer
+            if (m_bExplorerCollapsed)
+            {
+                ExpandExplorer(true);
+            }
+        }
+        #endregion
+
+        #region Lower level methods
+        public void CollapseExplorer()
+        {
+            splitWorkSpace.Panel2.SuspendLayout();
+            splitWorkSpace.Panel1.SuspendLayout();
+
+            if (m_bInitialized)
+            {
+                m_iOldSplitterDistance = splitWorkSpace.SplitterDistance;
+            }
+            else
+            {
+                m_iOldSplitterDistance = PreferencesManager.GeneralPreferences.ExplorerSplitterDistance;
+            }
+            m_bExplorerCollapsed = true;
+            foreach (Control ctrl in splitWorkSpace.Panel1.Controls)
+            {
+                ctrl.Visible = false;
+            }
+            splitWorkSpace.SplitterDistance = 4;
+            splitWorkSpace.SplitterWidth = 1;
+            splitWorkSpace.BorderStyle = BorderStyle.None;
+            RootKernel.mnuToggleFileExplorer.Checked = false;
+
+            splitWorkSpace.Panel1.ResumeLayout();
+            splitWorkSpace.Panel2.ResumeLayout();
+
+            PreferencesManager.GeneralPreferences.ExplorerSplitterDistance = m_iOldSplitterDistance;
+            PreferencesManager.GeneralPreferences.ExplorerVisible = false;
+            PreferencesManager.Save();
+        }
+        public void ExpandExplorer(bool resetSplitter)
+        {
+            if (m_iOldSplitterDistance != -1)
+            {
+                splitWorkSpace.Panel2.SuspendLayout();
+                splitWorkSpace.Panel1.SuspendLayout();
+
+                m_bExplorerCollapsed = false;
+                foreach (Control ctrl in splitWorkSpace.Panel1.Controls)
+                {
+                    ctrl.Visible = true;
+                }
+                if (resetSplitter) { splitWorkSpace.SplitterDistance = m_iOldSplitterDistance; }
+                splitWorkSpace.SplitterWidth = 4;
+                splitWorkSpace.BorderStyle = BorderStyle.FixedSingle;
+                RootKernel.mnuToggleFileExplorer.Checked = true;
+
+                splitWorkSpace.Panel1.ResumeLayout();
+                splitWorkSpace.Panel2.ResumeLayout();
+
+                PreferencesManager.GeneralPreferences.ExplorerSplitterDistance = splitWorkSpace.SplitterDistance;
+                PreferencesManager.GeneralPreferences.ExplorerVisible = true;
+                PreferencesManager.Save();
+            }
+
+        }
+        #endregion
+
+    }
+}
